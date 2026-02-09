@@ -2,21 +2,31 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a2e">
 <title>Flappy Bird</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
+  html, body {
+    width: 100%;
+    height: 100%;
     background: #1a1a2e;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Press Start 2P', monospace;
   }
 
   #gameWrapper {
@@ -24,12 +34,20 @@
     border: 4px solid #533e2d;
     border-radius: 8px;
     box-shadow: 0 0 40px rgba(255, 200, 50, 0.15), inset 0 0 20px rgba(0,0,0,0.3);
+    width: 90vmin;
+    height: 90vmin;
+    max-width: 100vh;
+    max-height: 100vh;
+    aspect-ratio: 2 / 3;
   }
 
   canvas {
     display: block;
+    width: 100%;
+    height: 100%;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    touch-action: none;
   }
 
   #overlay {
@@ -47,30 +65,34 @@
 
   .title {
     color: #fff;
-    font-size: 28px;
+    font-size: clamp(16px, 5vw, 28px);
     text-shadow: 3px 3px 0 #533e2d, -1px -1px 0 #533e2d;
     margin-bottom: 20px;
     letter-spacing: 2px;
     animation: bob 1.5s ease-in-out infinite;
+    text-align: center;
+    padding: 0 10px;
   }
 
   .subtitle {
     color: #f5deb3;
-    font-size: 11px;
+    font-size: clamp(8px, 3vw, 11px);
     text-shadow: 2px 2px 0 #333;
     animation: pulse 1.8s ease-in-out infinite;
+    text-align: center;
+    padding: 0 20px;
   }
 
   .score-display {
     color: #ffd700;
-    font-size: 18px;
+    font-size: clamp(12px, 4vw, 18px);
     margin-bottom: 15px;
     text-shadow: 2px 2px 0 #333;
   }
 
   .best-score {
     color: #c0c0c0;
-    font-size: 10px;
+    font-size: clamp(8px, 2.5vw, 10px);
     margin-bottom: 25px;
     text-shadow: 1px 1px 0 #333;
   }
@@ -84,6 +106,11 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
   }
+
+  /* Prevent iOS zoom on input */
+  input, select, textarea {
+    font-size: 16px;
+  }
 </style>
 </head>
 <body>
@@ -92,7 +119,7 @@
   <canvas id="game"></canvas>
   <div id="overlay" class="active">
     <div class="title">FLAPPY BIRD</div>
-    <div class="subtitle">CLICK OR PRESS SPACE TO PLAY</div>
+    <div class="subtitle">TAP TO PLAY</div>
   </div>
 </div>
 
@@ -101,10 +128,36 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const overlay = document.getElementById('overlay');
 
-// Game dimensions
+// Game dimensions (logical)
 const W = 400, H = 600;
-canvas.width = W;
-canvas.height = H;
+let scale = 1;
+let offsetX = 0, offsetY = 0;
+
+// Set canvas resolution
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+  
+  // Set canvas resolution for crisp rendering
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Calculate scale to maintain aspect ratio
+  const scaleX = width / W;
+  const scaleY = height / H;
+  scale = Math.min(scaleX, scaleY);
+  
+  // Center the game
+  offsetX = (width - W * scale) / 2;
+  offsetY = (height - H * scale) / 2;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeCanvas, 100);
+});
 
 // Game state
 let state = 'start'; // start, playing, dead
@@ -157,7 +210,7 @@ function showStart() {
   resetGame();
   overlay.innerHTML = `
     <div class="title">FLAPPY BIRD</div>
-    <div class="subtitle">CLICK OR PRESS SPACE TO PLAY</div>
+    <div class="subtitle">TAP TO PLAY</div>
   `;
   overlay.classList.add('active');
 }
@@ -165,10 +218,10 @@ function showStart() {
 function showDead() {
   if (score > bestScore) bestScore = score;
   overlay.innerHTML = `
-    <div class="title" style="font-size:22px;color:#ff6b6b;">GAME OVER</div>
+    <div class="title" style="font-size:clamp(14px, 4.5vw, 22px);color:#ff6b6b;">GAME OVER</div>
     <div class="score-display">Score: ${score}</div>
     <div class="best-score">Best: ${bestScore}</div>
-    <div class="subtitle">CLICK OR PRESS SPACE TO RESTART</div>
+    <div class="subtitle">TAP TO RESTART</div>
   `;
   overlay.classList.add('active');
 }
@@ -391,6 +444,15 @@ function update() {
 }
 
 function render() {
+  // Clear canvas
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Apply scale and offset
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
   ctx.clearRect(0, 0, W, H);
   drawSky();
 
@@ -400,6 +462,8 @@ function render() {
   drawGround();
   drawBird();
   drawScore();
+  
+  ctx.restore();
 }
 
 function loop() {
@@ -414,15 +478,31 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// Input
+// Input handling
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') {
     e.preventDefault();
     flap();
   }
 });
-canvas.addEventListener('click', flap);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); flap(); });
+
+// Mouse and touch events
+canvas.addEventListener('click', e => {
+  e.preventDefault();
+  flap();
+});
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  flap();
+});
+
+// Prevent scrolling on touch
+document.addEventListener('touchmove', e => {
+  if (e.target === canvas) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 // Init
 resetGame();
