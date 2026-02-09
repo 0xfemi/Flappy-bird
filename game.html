@@ -211,6 +211,9 @@ const difficultySettings = {
     PIPE_SPEED: 1.4,
     PIPE_GAP: 350,
     PIPE_INTERVAL: 160,
+    // velocity caps (lower values = slower bird)
+    MAX_FALL: 4,
+    MAX_RISE: 9,
     label: 'EASY'
   },
   medium: {
@@ -219,6 +222,8 @@ const difficultySettings = {
     PIPE_SPEED: 2.5,
     PIPE_GAP: 140,
     PIPE_INTERVAL: 100,
+    MAX_FALL: 8,
+    MAX_RISE: 10,
     label: 'MEDIUM'
   },
   nineJa: {
@@ -227,6 +232,8 @@ const difficultySettings = {
     PIPE_SPEED: 3.5,
     PIPE_GAP: 110,
     PIPE_INTERVAL: 80,
+    MAX_FALL: 12,
+    MAX_RISE: 12,
     label: '9JA MODE'
   }
 };
@@ -505,6 +512,9 @@ function update() {
 
   // Bird physics
   bird.vy += currentSettings.GRAVITY;
+  // Clamp vertical velocity to make the bird slower in easy mode
+  if (currentSettings.MAX_FALL !== undefined) bird.vy = Math.min(bird.vy, currentSettings.MAX_FALL);
+  if (currentSettings.MAX_RISE !== undefined) bird.vy = Math.max(bird.vy, -currentSettings.MAX_RISE);
   bird.y += bird.vy;
 
   // Spawn pipes
