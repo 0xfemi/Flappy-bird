@@ -179,12 +179,12 @@
     box-shadow: 0 0 20px #ffd700;
   }
 
-  .difficulty-btn.hard {
+  .difficulty-btn.nine-ja {
     border-color: #ff6b6b;
     color: #ff6b6b;
   }
 
-  .difficulty-btn.hard:hover {
+  .difficulty-btn.nine-ja:hover {
     box-shadow: 0 0 20px #ff6b6b;
   }
 
@@ -269,13 +269,13 @@ const difficultySettings = {
     PIPE_INTERVAL: 100,
     label: 'MEDIUM'
   },
-  hard: {
+  nineJa: {
     GRAVITY: 0.58,
     FLAP: -6.2,
     PIPE_SPEED: 3.5,
     PIPE_GAP: 110,
     PIPE_INTERVAL: 80,
-    label: 'HARD'
+    label: '9JA MODE'
   }
 };
 
@@ -330,7 +330,7 @@ function showDifficultySelect() {
     <div id="difficultySelector">
       <button class="difficulty-btn easy" onclick="selectDifficulty('easy')">EASY</button>
       <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">MEDIUM</button>
-      <button class="difficulty-btn hard" onclick="selectDifficulty('hard')">HARD</button>
+      <button class="difficulty-btn nine-ja" onclick="selectDifficulty('nineJa')">9JA MODE</button>
     </div>
   `;
   overlay.classList.add('active');
