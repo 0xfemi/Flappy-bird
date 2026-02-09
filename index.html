@@ -2,43 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a1a2e">
 <title>Flappy Bird</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
     width: 100%;
     height: 100%;
+    height: 100vh;
+    height: 100dvh;
     background: #1a1a2e;
     overflow: hidden;
     font-family: 'Press Start 2P', monospace;
-    touch-action: none;
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    -webkit-font-smoothing: antialiased;
+    position: fixed;
+    top: 0;
+    left: 0;
   }
 
   body {
     display: flex;
     justify-content: center;
     align-items: center;
+    touch-action: none;
   }
 
   #gameWrapper {
-    position: relative;
-    border: 4px solid #533e2d;
-    border-radius: 8px;
-    box-shadow: 0 0 40px rgba(255, 200, 50, 0.15), inset 0 0 20px rgba(0,0,0,0.3);
-    width: 90vmin;
-    height: 90vmin;
-    max-width: 100vh;
-    max-height: 100vh;
-    aspect-ratio: 2 / 3;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
   }
 
   canvas {
@@ -48,6 +54,7 @@
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     touch-action: none;
+    -webkit-touch-callout: none;
   }
 
   #overlay {
@@ -61,22 +68,22 @@
     z-index: 10;
   }
 
-  #overlay.active { pointer-events: all; }
+  #overlay.active { pointer-events: auto; }
 
   .title {
     color: #fff;
-    font-size: clamp(16px, 5vw, 28px);
+    font-size: clamp(24px, 7vw, 48px);
     text-shadow: 3px 3px 0 #533e2d, -1px -1px 0 #533e2d;
     margin-bottom: 20px;
     letter-spacing: 2px;
     animation: bob 1.5s ease-in-out infinite;
     text-align: center;
-    padding: 0 10px;
+    padding: 0 20px;
   }
 
   .subtitle {
     color: #f5deb3;
-    font-size: clamp(8px, 3vw, 11px);
+    font-size: clamp(10px, 4vw, 16px);
     text-shadow: 2px 2px 0 #333;
     animation: pulse 1.8s ease-in-out infinite;
     text-align: center;
@@ -85,14 +92,14 @@
 
   .score-display {
     color: #ffd700;
-    font-size: clamp(12px, 4vw, 18px);
+    font-size: clamp(16px, 6vw, 32px);
     margin-bottom: 15px;
     text-shadow: 2px 2px 0 #333;
   }
 
   .best-score {
     color: #c0c0c0;
-    font-size: clamp(8px, 2.5vw, 10px);
+    font-size: clamp(10px, 3vw, 14px);
     margin-bottom: 25px;
     text-shadow: 1px 1px 0 #333;
   }
@@ -105,11 +112,6 @@
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
-  }
-
-  /* Prevent iOS zoom on input */
-  input, select, textarea {
-    font-size: 16px;
   }
 </style>
 </head>
@@ -125,7 +127,7 @@
 
 <script>
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false });
 const overlay = document.getElementById('overlay');
 
 // Game dimensions (logical)
@@ -133,24 +135,19 @@ const W = 400, H = 600;
 let scale = 1;
 let offsetX = 0, offsetY = 0;
 
-// Set canvas resolution
+// Set canvas to fullscreen resolution
 function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const width = rect.width;
-  const height = rect.height;
-  
-  // Set canvas resolution for crisp rendering
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   
   // Calculate scale to maintain aspect ratio
-  const scaleX = width / W;
-  const scaleY = height / H;
+  const scaleX = canvas.width / W;
+  const scaleY = canvas.height / H;
   scale = Math.min(scaleX, scaleY);
   
   // Center the game
-  offsetX = (width - W * scale) / 2;
-  offsetY = (height - H * scale) / 2;
+  offsetX = (canvas.width - W * scale) / 2;
+  offsetY = (canvas.height - H * scale) / 2;
 }
 
 resizeCanvas();
@@ -218,7 +215,7 @@ function showStart() {
 function showDead() {
   if (score > bestScore) bestScore = score;
   overlay.innerHTML = `
-    <div class="title" style="font-size:clamp(14px, 4.5vw, 22px);color:#ff6b6b;">GAME OVER</div>
+    <div class="title" style="color:#ff6b6b;">GAME OVER</div>
     <div class="score-display">Score: ${score}</div>
     <div class="best-score">Best: ${bestScore}</div>
     <div class="subtitle">TAP TO RESTART</div>
@@ -444,11 +441,11 @@ function update() {
 }
 
 function render() {
-  // Clear canvas
+  // Clear full canvas with background color
   ctx.fillStyle = '#1a1a2e';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // Apply scale and offset
+  // Apply scale and offset for game rendering
   ctx.save();
   ctx.translate(offsetX, offsetY);
   ctx.scale(scale, scale);
@@ -486,23 +483,30 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Mouse and touch events
-canvas.addEventListener('click', e => {
-  e.preventDefault();
+// Mouse events
+document.addEventListener('click', e => {
   flap();
 });
 
-canvas.addEventListener('touchstart', e => {
+// Touch events - critical for mobile
+document.addEventListener('touchstart', e => {
   e.preventDefault();
   flap();
-});
-
-// Prevent scrolling on touch
-document.addEventListener('touchmove', e => {
-  if (e.target === canvas) {
-    e.preventDefault();
-  }
 }, { passive: false });
+
+document.addEventListener('touchend', e => {
+  e.preventDefault();
+}, { passive: false });
+
+// Prevent default touch behaviors
+document.addEventListener('touchmove', e => {
+  e.preventDefault();
+}, { passive: false });
+
+// Prevent context menu on long press
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+});
 
 // Init
 resetGame();
