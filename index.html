@@ -171,14 +171,13 @@ const PIPE_INTERVAL = 100; // frames between pipes
 const GROUND_H = 80;
 const BIRD_SIZE = 20;
 
-// Colors (retro palette)
+// Colors
 const SKY_TOP = '#4ec0ca';
 const SKY_BOT = '#e8f0d0';
 const GROUND_COLOR = '#ded895';
 const GROUND_DARK = '#533e2d';
-const PIPE_GREEN = '#74bf2e';
-const PIPE_GREEN_DARK = '#558b2f';
-const PIPE_GREEN_LIGHT = '#8bc34a';
+const TREE_TRUNK = '#8B4513';
+const TREE_FOLIAGE = '#228B22';
 const PIPE_CAP_H = 26;
 
 function resetGame() {
@@ -269,31 +268,57 @@ function drawGround() {
   }
 }
 
-function drawPipe(pipe) {
+function drawTree(pipe) {
   const topH = pipe.topH;
   const botY = topH + PIPE_GAP;
+  const trunkWidth = 12;
+  const trunkX = pipe.x + PIPE_WIDTH / 2 - trunkWidth / 2;
 
-  // Top pipe body
-  ctx.fillStyle = PIPE_GREEN;
-  ctx.fillRect(pipe.x, 0, PIPE_WIDTH, topH - PIPE_CAP_H);
-  // Top pipe cap
-  ctx.fillStyle = PIPE_GREEN_DARK;
-  ctx.fillRect(pipe.x - 4, topH - PIPE_CAP_H, PIPE_WIDTH + 8, PIPE_CAP_H);
-  // Highlight
-  ctx.fillStyle = PIPE_GREEN_LIGHT;
-  ctx.fillRect(pipe.x + 4, 0, 8, topH - PIPE_CAP_H);
-  ctx.fillRect(pipe.x, topH - PIPE_CAP_H + 2, PIPE_WIDTH + 8 - 8, 4);
+  // TOP TREE (above pipe gap)
+  // Foliage - pyramid shape
+  ctx.fillStyle = TREE_FOLIAGE;
+  ctx.beginPath();
+  ctx.moveTo(pipe.x - 8, topH - 8);
+  ctx.lineTo(pipe.x + PIPE_WIDTH + 8, topH - 8);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, topH - 30);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Foliage highlight
+  ctx.fillStyle = '#32CD32';
+  ctx.beginPath();
+  ctx.moveTo(pipe.x + PIPE_WIDTH / 2 - 6, topH - 20);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2 + 6, topH - 20);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, topH - 28);
+  ctx.closePath();
+  ctx.fill();
 
-  // Bottom pipe body
-  ctx.fillStyle = PIPE_GREEN;
-  ctx.fillRect(pipe.x, botY + PIPE_CAP_H, PIPE_WIDTH, H - GROUND_H - botY - PIPE_CAP_H);
-  // Bottom pipe cap
-  ctx.fillStyle = PIPE_GREEN_DARK;
-  ctx.fillRect(pipe.x - 4, botY, PIPE_WIDTH + 8, PIPE_CAP_H);
-  // Highlight
-  ctx.fillStyle = PIPE_GREEN_LIGHT;
-  ctx.fillRect(pipe.x + 4, botY + PIPE_CAP_H, 8, H - GROUND_H - botY - PIPE_CAP_H);
-  ctx.fillRect(pipe.x, botY + PIPE_CAP_H - 6, PIPE_WIDTH + 8 - 8, 4);
+  // Trunk
+  ctx.fillStyle = TREE_TRUNK;
+  ctx.fillRect(trunkX, topH - 8, trunkWidth, topH);
+
+  // BOTTOM TREE (below pipe gap)
+  // Foliage - inverted pyramid
+  ctx.fillStyle = TREE_FOLIAGE;
+  ctx.beginPath();
+  ctx.moveTo(pipe.x - 8, botY + 8);
+  ctx.lineTo(pipe.x + PIPE_WIDTH + 8, botY + 8);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, botY + 30);
+  ctx.closePath();
+  ctx.fill();
+
+  // Foliage highlight
+  ctx.fillStyle = '#32CD32';
+  ctx.beginPath();
+  ctx.moveTo(pipe.x + PIPE_WIDTH / 2 - 6, botY + 20);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2 + 6, botY + 20);
+  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, botY + 28);
+  ctx.closePath();
+  ctx.fill();
+
+  // Trunk
+  ctx.fillStyle = TREE_TRUNK;
+  ctx.fillRect(trunkX, botY + 8, trunkWidth, 8);
 }
 
 function drawBird() {
@@ -393,9 +418,9 @@ function collides() {
     const px = p.x - 4, pw = PIPE_WIDTH + 8;
     // Check horizontal overlap
     if (bx + br > px && bx - br < px + pw) {
-      // Top pipe
+      // Top tree
       if (by - br < p.topH) return true;
-      // Bottom pipe
+      // Bottom tree
       if (by + br > p.topH + PIPE_GAP) return true;
     }
   }
@@ -453,8 +478,8 @@ function render() {
   ctx.clearRect(0, 0, W, H);
   drawSky();
 
-  // Pipes
-  for (const p of pipes) drawPipe(p);
+  // Trees
+  for (const p of pipes) drawTree(p);
 
   drawGround();
   drawBird();
