@@ -171,9 +171,9 @@ const PIPE_INTERVAL = 100; // frames between pipes
 const GROUND_H = 80;
 const BIRD_SIZE = 20;
 
-// Colors (Nigerian flag: green, white, green)
-const FLAG_GREEN = '#22863A';
-const FLAG_WHITE = '#FFFFFF';
+// Colors (retro palette)
+const SKY_TOP = '#4ec0ca';
+const SKY_BOT = '#e8f0d0';
 const GROUND_COLOR = '#ded895';
 const GROUND_DARK = '#533e2d';
 const PIPE_GREEN = '#74bf2e';
@@ -230,23 +230,14 @@ function die() {
 
 // Drawing helpers
 function drawSky() {
-  const skyHeight = H - GROUND_H;
-  const stripeHeight = skyHeight / 3;
-  
-  // Top stripe - Dark Green
-  ctx.fillStyle = FLAG_GREEN;
-  ctx.fillRect(0, 0, W, stripeHeight);
-  
-  // Middle stripe - White
-  ctx.fillStyle = FLAG_WHITE;
-  ctx.fillRect(0, stripeHeight, W, stripeHeight);
-  
-  // Bottom stripe - Dark Green
-  ctx.fillStyle = FLAG_GREEN;
-  ctx.fillRect(0, stripeHeight * 2, W, stripeHeight);
+  const grad = ctx.createLinearGradient(0, 0, 0, H - GROUND_H);
+  grad.addColorStop(0, SKY_TOP);
+  grad.addColorStop(1, SKY_BOT);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H - GROUND_H);
 
   // Clouds
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
   drawCloud(50 + ((frame * 0.3) % (W + 200)) - 100, 80, 1);
   drawCloud(220 + ((frame * 0.2) % (W + 200)) - 100, 140, 0.7);
   drawCloud(350 + ((frame * 0.25) % (W + 200)) - 100, 60, 0.85);
@@ -382,8 +373,8 @@ function drawBird() {
 
 function drawScore() {
   if (state !== 'playing') return;
-  ctx.fillStyle = '#000';
-  ctx.strokeStyle = '#fff';
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#333';
   ctx.lineWidth = 4;
   ctx.font = '36px "Press Start 2P", monospace';
   ctx.textAlign = 'center';
