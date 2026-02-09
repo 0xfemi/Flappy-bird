@@ -104,6 +104,26 @@
     text-shadow: 1px 1px 0 #333;
   }
 
+  #credit {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: clamp(8px, 2vw, 12px);
+    color: #999;
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 1px 1px 0 #333;
+  }
+
+  #credit a {
+    color: #4ec0ca;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  #credit a:hover {
+    color: #5ed9e3;
+  }
+
   @keyframes bob {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -123,6 +143,7 @@
     <div class="title">FLAPPY BIRD</div>
     <div class="subtitle">TAP TO PLAY</div>
   </div>
+  <div id="credit">built by <a href="https://twitter.com/0xfemi" target="_blank" rel="noopener noreferrer">0xfemi</a></div>
 </div>
 
 <script>
@@ -526,7 +547,7 @@ document.addEventListener('touchmove', e => {
 }, { passive: false });
 
 // Prevent context menu on long press
-document.addEventListener('contextmenu', e => {
+document.addEventListener('contextmeta', e => {
   e.preventDefault();
 });
 
