@@ -133,6 +133,74 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
   }
+
+  #difficultySelector {
+    display: flex;
+    gap: 20px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .difficulty-btn {
+    padding: 12px 24px;
+    font-size: clamp(10px, 3vw, 16px);
+    font-family: 'Press Start 2P', monospace;
+    border: 3px solid #fff;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 #333;
+  }
+
+  .difficulty-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+  }
+
+  .difficulty-btn.easy {
+    border-color: #4ec0ca;
+    color: #4ec0ca;
+  }
+
+  .difficulty-btn.easy:hover {
+    box-shadow: 0 0 20px #4ec0ca;
+  }
+
+  .difficulty-btn.medium {
+    border-color: #ffd700;
+    color: #ffd700;
+  }
+
+  .difficulty-btn.medium:hover {
+    box-shadow: 0 0 20px #ffd700;
+  }
+
+  .difficulty-btn.hard {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+  }
+
+  .difficulty-btn.hard:hover {
+    box-shadow: 0 0 20px #ff6b6b;
+  }
+
+  .difficulty-label {
+    color: #f5deb3;
+    font-size: clamp(10px, 3vw, 14px);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .current-difficulty {
+    color: #4ec0ca;
+    font-size: clamp(10px, 2.5vw, 12px);
+    margin-top: 20px;
+    text-shadow: 1px 1px 0 #333;
+  }
 </style>
 </head>
 <body>
@@ -178,19 +246,41 @@ window.addEventListener('orientationchange', () => {
 });
 
 // Game state
-let state = 'start'; // start, playing, dead
+let state = 'start'; // start, playing, dead, difficultySelect
 let bird, pipes, score, bestScore = 0, frame = 0;
 let groundX = 0;
+let selectedDifficulty = null;
 
-// Physics
-const GRAVITY = 0.45;
-const FLAP = -7.5;
-const PIPE_SPEED = 2.5;
-const PIPE_GAP = 140;
-const PIPE_WIDTH = 56;
-const PIPE_INTERVAL = 100; // frames between pipes
-const GROUND_H = 80;
-const BIRD_SIZE = 20;
+// Difficulty settings
+const difficultySettings = {
+  easy: {
+    GRAVITY: 0.32,
+    FLAP: -9.5,
+    PIPE_SPEED: 1.8,
+    PIPE_GAP: 165,
+    PIPE_INTERVAL: 130,
+    label: 'EASY'
+  },
+  medium: {
+    GRAVITY: 0.45,
+    FLAP: -7.5,
+    PIPE_SPEED: 2.5,
+    PIPE_GAP: 140,
+    PIPE_INTERVAL: 100,
+    label: 'MEDIUM'
+  },
+  hard: {
+    GRAVITY: 0.58,
+    FLAP: -6.2,
+    PIPE_SPEED: 3.5,
+    PIPE_GAP: 110,
+    PIPE_INTERVAL: 80,
+    label: 'HARD'
+  }
+};
+
+// Current difficulty settings
+let currentSettings = difficultySettings.medium;
 
 // Colors - changed to mahogany/tree colors
 const SKY_TOP = '#4ec0ca';
@@ -211,12 +301,12 @@ function resetGame() {
 
 function flap() {
   if (state === 'start') {
-    state = 'playing';
-    overlay.classList.remove('active');
-    overlay.innerHTML = '';
-    resetGame();
+    state = 'difficultySelect';
+    showDifficultySelect();
+  } else if (state === 'difficultySelect') {
+    // Difficulty buttons handle their own state
   } else if (state === 'playing') {
-    bird.vy = FLAP;
+    bird.vy = currentSettings.FLAP;
     bird.flapFrame = frame;
   } else if (state === 'dead') {
     state = 'start';
@@ -231,6 +321,28 @@ function showStart() {
     <div class="subtitle">TAP TO PLAY</div>
   `;
   overlay.classList.add('active');
+}
+
+function showDifficultySelect() {
+  overlay.innerHTML = `
+    <div class="title">FLAPPY BIRD</div>
+    <div class="difficulty-label">SELECT DIFFICULTY</div>
+    <div id="difficultySelector">
+      <button class="difficulty-btn easy" onclick="selectDifficulty('easy')">EASY</button>
+      <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">MEDIUM</button>
+      <button class="difficulty-btn hard" onclick="selectDifficulty('hard')">HARD</button>
+    </div>
+  `;
+  overlay.classList.add('active');
+}
+
+function selectDifficulty(difficulty) {
+  selectedDifficulty = difficulty;
+  currentSettings = difficultySettings[difficulty];
+  state = 'playing';
+  overlay.classList.remove('active');
+  overlay.innerHTML = '';
+  resetGame();
 }
 
 function showDead() {
@@ -292,7 +404,7 @@ function drawGround() {
 
 function drawPipe(pipe) {
   const topH = pipe.topH;
-  const botY = topH + PIPE_GAP;
+  const botY = topH + currentSettings.PIPE_GAP;
 
   // Top pipe body (mahogany wood)
   ctx.fillStyle = PIPE_BROWN;
@@ -439,7 +551,7 @@ function collides() {
       // Top pipe
       if (by - br < p.topH) return true;
       // Bottom pipe
-      if (by + br > p.topH + PIPE_GAP) return true;
+      if (by + br > p.topH + currentSettings.PIPE_GAP) return true;
     }
   }
   return false;
@@ -449,23 +561,23 @@ function update() {
   if (state !== 'playing') return;
 
   frame++;
-  groundX = (groundX + PIPE_SPEED) % 24;
+  groundX = (groundX + currentSettings.PIPE_SPEED) % 24;
 
   // Bird physics
-  bird.vy += GRAVITY;
+  bird.vy += currentSettings.GRAVITY;
   bird.y += bird.vy;
 
   // Spawn pipes
-  if (frame % PIPE_INTERVAL === 0) {
+  if (frame % currentSettings.PIPE_INTERVAL === 0) {
     const minTop = 60;
-    const maxTop = H - GROUND_H - PIPE_GAP - 60;
+    const maxTop = H - GROUND_H - currentSettings.PIPE_GAP - 60;
     const topH = minTop + Math.random() * (maxTop - minTop);
     pipes.push({ x: W + 10, topH, scored: false });
   }
 
   // Move pipes
   for (let i = pipes.length - 1; i >= 0; i--) {
-    pipes[i].x -= PIPE_SPEED;
+    pipes[i].x -= currentSettings.PIPE_SPEED;
 
     // Score
     if (!pipes[i].scored && pipes[i].x + PIPE_WIDTH < bird.x) {
