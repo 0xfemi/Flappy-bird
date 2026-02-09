@@ -156,20 +156,6 @@ window.addEventListener('orientationchange', () => {
   setTimeout(resizeCanvas, 100);
 });
 
-// Request fullscreen
-function requestFullscreen() {
-  const elem = document.documentElement;
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen().catch(err => console.log('Fullscreen request denied'));
-  } else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  }
-}
-
 // Game state
 let state = 'start'; // start, playing, dead
 let bird, pipes, score, bestScore = 0, frame = 0;
@@ -208,7 +194,6 @@ function flap() {
     overlay.classList.remove('active');
     overlay.innerHTML = '';
     resetGame();
-    requestFullscreen();
   } else if (state === 'playing') {
     bird.vy = FLAP;
     bird.flapFrame = frame;
@@ -521,11 +506,6 @@ document.addEventListener('touchmove', e => {
 // Prevent context menu on long press
 document.addEventListener('contextmenu', e => {
   e.preventDefault();
-});
-
-// Handle fullscreen exit
-document.addEventListener('fullscreenchange', () => {
-  resizeCanvas();
 });
 
 // Init
