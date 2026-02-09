@@ -328,12 +328,20 @@ function showDifficultySelect() {
     <div class="title">FLAPPY BIRD</div>
     <div class="difficulty-label">SELECT DIFFICULTY</div>
     <div id="difficultySelector">
-      <button class="difficulty-btn easy" onclick="selectDifficulty('easy')">EASY</button>
-      <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">MEDIUM</button>
-      <button class="difficulty-btn nine-ja" onclick="selectDifficulty('nineJa')">9JA MODE</button>
+      <button class="difficulty-btn easy" data-difficulty="easy">EASY</button>
+      <button class="difficulty-btn medium" data-difficulty="medium">MEDIUM</button>
+      <button class="difficulty-btn nine-ja" data-difficulty="nineJa">9JA MODE</button>
     </div>
   `;
   overlay.classList.add('active');
+  
+  // Add event listeners to difficulty buttons
+  document.querySelectorAll('.difficulty-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectDifficulty(btn.dataset.difficulty);
+    });
+  });
 }
 
 function selectDifficulty(difficulty) {
