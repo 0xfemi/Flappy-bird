@@ -171,13 +171,14 @@ const PIPE_INTERVAL = 100; // frames between pipes
 const GROUND_H = 80;
 const BIRD_SIZE = 20;
 
-// Colors
+// Colors - changed to mahogany/tree colors
 const SKY_TOP = '#4ec0ca';
 const SKY_BOT = '#e8f0d0';
 const GROUND_COLOR = '#ded895';
 const GROUND_DARK = '#533e2d';
-const TREE_TRUNK = '#8B4513';
-const TREE_FOLIAGE = '#228B22';
+const PIPE_BROWN = '#8B4513';
+const PIPE_BROWN_DARK = '#654321';
+const PIPE_BROWN_LIGHT = '#A0522D';
 const PIPE_CAP_H = 26;
 
 function resetGame() {
@@ -268,57 +269,53 @@ function drawGround() {
   }
 }
 
-function drawTree(pipe) {
+function drawPipe(pipe) {
   const topH = pipe.topH;
   const botY = topH + PIPE_GAP;
-  const trunkWidth = 12;
-  const trunkX = pipe.x + PIPE_WIDTH / 2 - trunkWidth / 2;
 
-  // TOP TREE (above pipe gap)
-  // Foliage - pyramid shape
-  ctx.fillStyle = TREE_FOLIAGE;
-  ctx.beginPath();
-  ctx.moveTo(pipe.x - 8, topH - 8);
-  ctx.lineTo(pipe.x + PIPE_WIDTH + 8, topH - 8);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, topH - 30);
-  ctx.closePath();
-  ctx.fill();
+  // Top pipe body (mahogany wood)
+  ctx.fillStyle = PIPE_BROWN;
+  ctx.fillRect(pipe.x, 0, PIPE_WIDTH, topH - PIPE_CAP_H);
   
-  // Foliage highlight
-  ctx.fillStyle = '#32CD32';
-  ctx.beginPath();
-  ctx.moveTo(pipe.x + PIPE_WIDTH / 2 - 6, topH - 20);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2 + 6, topH - 20);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, topH - 28);
-  ctx.closePath();
-  ctx.fill();
+  // Add bark texture lines
+  ctx.strokeStyle = '#654321';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < topH - PIPE_CAP_H; i += 8) {
+    ctx.beginPath();
+    ctx.moveTo(pipe.x + 2, i);
+    ctx.lineTo(pipe.x + PIPE_WIDTH - 2, i);
+    ctx.stroke();
+  }
+  
+  // Top pipe cap
+  ctx.fillStyle = PIPE_BROWN_DARK;
+  ctx.fillRect(pipe.x - 4, topH - PIPE_CAP_H, PIPE_WIDTH + 8, PIPE_CAP_H);
+  
+  // Cap highlight
+  ctx.fillStyle = PIPE_BROWN_LIGHT;
+  ctx.fillRect(pipe.x + 4, topH - PIPE_CAP_H + 2, PIPE_WIDTH - 8, 4);
 
-  // Trunk
-  ctx.fillStyle = TREE_TRUNK;
-  ctx.fillRect(trunkX, topH - 8, trunkWidth, topH);
-
-  // BOTTOM TREE (below pipe gap)
-  // Foliage - inverted pyramid
-  ctx.fillStyle = TREE_FOLIAGE;
-  ctx.beginPath();
-  ctx.moveTo(pipe.x - 8, botY + 8);
-  ctx.lineTo(pipe.x + PIPE_WIDTH + 8, botY + 8);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, botY + 30);
-  ctx.closePath();
-  ctx.fill();
-
-  // Foliage highlight
-  ctx.fillStyle = '#32CD32';
-  ctx.beginPath();
-  ctx.moveTo(pipe.x + PIPE_WIDTH / 2 - 6, botY + 20);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2 + 6, botY + 20);
-  ctx.lineTo(pipe.x + PIPE_WIDTH / 2, botY + 28);
-  ctx.closePath();
-  ctx.fill();
-
-  // Trunk
-  ctx.fillStyle = TREE_TRUNK;
-  ctx.fillRect(trunkX, botY + 8, trunkWidth, 8);
+  // Bottom pipe body (mahogany wood)
+  ctx.fillStyle = PIPE_BROWN;
+  ctx.fillRect(pipe.x, botY + PIPE_CAP_H, PIPE_WIDTH, H - GROUND_H - botY - PIPE_CAP_H);
+  
+  // Add bark texture lines
+  ctx.strokeStyle = '#654321';
+  ctx.lineWidth = 1;
+  for (let i = botY + PIPE_CAP_H; i < H - GROUND_H; i += 8) {
+    ctx.beginPath();
+    ctx.moveTo(pipe.x + 2, i);
+    ctx.lineTo(pipe.x + PIPE_WIDTH - 2, i);
+    ctx.stroke();
+  }
+  
+  // Bottom pipe cap
+  ctx.fillStyle = PIPE_BROWN_DARK;
+  ctx.fillRect(pipe.x - 4, botY, PIPE_WIDTH + 8, PIPE_CAP_H);
+  
+  // Cap highlight
+  ctx.fillStyle = PIPE_BROWN_LIGHT;
+  ctx.fillRect(pipe.x + 4, botY + PIPE_CAP_H - 6, PIPE_WIDTH - 8, 4);
 }
 
 function drawBird() {
@@ -418,9 +415,9 @@ function collides() {
     const px = p.x - 4, pw = PIPE_WIDTH + 8;
     // Check horizontal overlap
     if (bx + br > px && bx - br < px + pw) {
-      // Top tree
+      // Top pipe
       if (by - br < p.topH) return true;
-      // Bottom tree
+      // Bottom pipe
       if (by + br > p.topH + PIPE_GAP) return true;
     }
   }
@@ -478,8 +475,8 @@ function render() {
   ctx.clearRect(0, 0, W, H);
   drawSky();
 
-  // Trees
-  for (const p of pipes) drawTree(p);
+  // Pipes (now styled as tree trunks)
+  for (const p of pipes) drawPipe(p);
 
   drawGround();
   drawBird();
